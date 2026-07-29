@@ -1,0 +1,11 @@
+{
+    "name": "DAB Transmitter HA Integration",
+    "country": [
+      "UK"
+    ],
+    "render_readme": true,
+    "zip_release": true,
+    "filename": "ha_dabtx.zip",
+    "hide_default_branch": true,
+    "homeassistant": "2025.1"
+  }
