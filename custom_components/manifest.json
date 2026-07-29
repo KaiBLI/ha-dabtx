@@ -1,0 +1,18 @@
+{
+  "domain": "ha_dabtx",
+  "name": "HA DAB Transmitter Integration",
+  "codeowners": [
+    "@KaiBLI"
+  ],
+  "config_flow": true,
+  "dependencies": [
+    "http"
+  ],
+  "documentation": "https://github.com/KaiBLI/ha_dabtx",
+  "iot_class": "cloud_polling",
+  "issue_tracker": "https://github.com/KaiBLI/ha_dabtx/issues",
+  "requirements": [
+    "pydub",
+  ],
+  "version": "0.1a1"
+}
