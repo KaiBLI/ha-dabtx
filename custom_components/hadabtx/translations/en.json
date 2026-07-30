@@ -1,0 +1,51 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Connect to odrDAB TX Integration",
+        "data": {
+          "host": "Host (IP address)",
+          "username": "Username",
+          "password": "Password"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Could not connect to the modulator. Check the host and credentials."
+    },
+    "abort": {
+      "already_configured": "This modulator is already configured."
+    }
+  },
+  "entity": {
+    "sensor": {
+      "frequency": { "name": "Frequency" },
+      "dab_block": { "name": "DAB block" },
+      "amplitude": { "name": "Amplitude" },
+      "dac_current": { "name": "DAC current" },
+      "remote_ip": { "name": "Remote IP" },
+      "remote_port": { "name": "Remote port" }
+    },
+    "number": {
+      "amplitude_set": { "name": "Amplitude (set)" },
+      "dac_current_set": { "name": "DAC current (set)" },
+      "remote_port_set": { "name": "Remote port (set)" },
+      "frequency_set": { "name": "Frequency Hz (set)" }
+    },
+    "select": {
+      "dab_block_set": { "name": "DAB block (set)" }
+    },
+    "text": {
+      "remote_ip_set": { "name": "Remote IP (set)" }
+    },
+    "button": {
+      "apply_changes": { "name": "Apply changes" }
+    }
+  },
+  "services": {
+    "set_config": {
+      "name": "Set config",
+      "description": "Change one or more settings on a DAB modulator."
+    }
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "domain": "hadabtx",
+  "name": "odrDAB TX Integration",
+  "codeowners": [],
+  "config_flow": true,
+  "documentation": "https://www.home-assistant.io/integrations/hadabtx",
+  "iot_class": "local_polling",
+  "requirements": [],
+  "version": "0.1.0"
+}

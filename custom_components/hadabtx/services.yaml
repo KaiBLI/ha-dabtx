@@ -1,0 +1,108 @@
+set_config:
+  name: Set config
+  description: >
+    Change one or more settings on a DAB modulator. Only the fields you
+    provide are changed; everything else is left untouched. The device will
+    reboot to apply the change (required by the hardware).
+  fields:
+    device_id:
+      name: Device
+      description: The odrDAB TX Integration device to configure.
+      required: true
+      selector:
+        device:
+          integration: hadabtx
+    remote_ip:
+      name: Remote/ETI server IP
+      description: IP address of the ETI source server.
+      example: "192.168.1.20"
+      selector:
+        text:
+    remote_port:
+      name: Remote port
+      description: Port of the ETI source server.
+      example: 10202
+      selector:
+        number:
+          min: 0
+          max: 65535
+          mode: box
+    frequency_hz:
+      name: Frequency (Hz)
+      description: >
+        Exact output frequency in Hz. Use this OR dab_block, not both.
+      example: 194064000
+      selector:
+        number:
+          min: 0
+          max: 300000000
+          mode: box
+    dab_block:
+      name: DAB block
+      description: >
+        DAB Band III block (e.g. 9B). Looked up and converted to the
+        corresponding frequency automatically. Use this OR frequency_hz, not
+        both.
+      example: "9B"
+      selector:
+        select:
+          options:
+            - "5A"
+            - "5B"
+            - "5C"
+            - "5D"
+            - "6A"
+            - "6B"
+            - "6C"
+            - "6D"
+            - "7A"
+            - "7B"
+            - "7C"
+            - "7D"
+            - "8A"
+            - "8B"
+            - "8C"
+            - "8D"
+            - "9A"
+            - "9B"
+            - "9C"
+            - "9D"
+            - "10A"
+            - "10B"
+            - "10C"
+            - "10D"
+            - "10N"
+            - "11A"
+            - "11B"
+            - "11C"
+            - "11D"
+            - "11N"
+            - "12A"
+            - "12B"
+            - "12C"
+            - "12D"
+            - "12N"
+            - "13A"
+            - "13B"
+            - "13C"
+            - "13D"
+            - "13E"
+            - "13F"
+    amplitude:
+      name: Amplitude
+      description: Output amplitude (0-255).
+      example: 197
+      selector:
+        number:
+          min: 0
+          max: 255
+          mode: box
+    dac_current:
+      name: DAC current
+      description: DAC current setting (0-255).
+      example: 128
+      selector:
+        number:
+          min: 0
+          max: 255
+          mode: box
