@@ -1,10 +1,13 @@
 {
   "domain": "hadabtx",
   "name": "odrDAB TX Integration",
-  "codeowners": [],
+  "codeowners": [
+    "@KaiBLI"
+  ],
   "config_flow": true,
-  "documentation": "https://www.home-assistant.io/integrations/hadabtx",
+  "documentation": "https://github.com/kaibli/hadabtx",
   "iot_class": "local_polling",
+  "issue_tracker": "https://github.com/kaibli/hadabtx/issues",
   "requirements": [],
   "version": "0.1.0"
 }
