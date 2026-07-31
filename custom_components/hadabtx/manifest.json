@@ -5,9 +5,9 @@
     "@KaiBLI"
   ],
   "config_flow": true,
-  "documentation": "https://github.com/kaibli/hadabtx",
+  "documentation": "https://github.com/kaibli/ha-dabtx",
   "iot_class": "local_polling",
-  "issue_tracker": "https://github.com/kaibli/hadabtx/issues",
+  "issue_tracker": "https://github.com/kaibli/ha-dabtx/issues",
   "requirements": [],
-  "version": "0.1a1"
+  "version": "0.1.1"
 }
