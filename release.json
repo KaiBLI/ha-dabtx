@@ -8,7 +8,7 @@
       "draft": false,
       "prerelease": false,
       "extra-files": [
-        "custom_components/ha_dabtx/manifest.json"
+        "custom_components/hadabtx/manifest.json"
       ]
     }
   },
