@@ -15,6 +15,7 @@ from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from .api import DabModulatorClient, DabModulatorError
 from .const import (
     ATTR_AMPLITUDE,
+    ATTR_CONNECTION_MODE,
     ATTR_DAB_BLOCK,
     ATTR_DAC_CURRENT,
     ATTR_FREQUENCY_HZ,
@@ -31,10 +32,12 @@ _LOGGER = logging.getLogger(__name__)
 
 PLATFORMS: list[Platform] = [
     Platform.SENSOR,
+    Platform.BINARY_SENSOR,
     Platform.NUMBER,
     Platform.SELECT,
     Platform.TEXT,
     Platform.BUTTON,
+    Platform.SWITCH,
 ]
 
 SET_CONFIG_SCHEMA = vol.Schema(
@@ -46,6 +49,7 @@ SET_CONFIG_SCHEMA = vol.Schema(
         vol.Optional(ATTR_DAB_BLOCK): vol.In(sorted(DAB_BLOCKS)),
         vol.Optional(ATTR_AMPLITUDE): vol.All(vol.Coerce(int), vol.Range(min=0, max=255)),
         vol.Optional(ATTR_DAC_CURRENT): vol.All(vol.Coerce(int), vol.Range(min=0, max=255)),
+        vol.Optional(ATTR_CONNECTION_MODE): vol.In(["server", "client", "off"]),
     }
 )
 
@@ -108,6 +112,7 @@ def _async_register_services(hass: HomeAssistant) -> None:
                 ATTR_DAB_BLOCK,
                 ATTR_AMPLITUDE,
                 ATTR_DAC_CURRENT,
+                ATTR_CONNECTION_MODE,
             )
             if k in call.data
         }

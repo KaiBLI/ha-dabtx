@@ -17,14 +17,26 @@
       "already_configured": "This modulator is already configured."
     }
   },
-  "entity": {
+"entity": {
     "sensor": {
       "frequency": { "name": "Frequency" },
       "dab_block": { "name": "DAB block" },
       "amplitude": { "name": "Amplitude" },
       "dac_current": { "name": "DAC current" },
       "remote_ip": { "name": "Remote IP" },
-      "remote_port": { "name": "Remote port" }
+      "remote_port": { "name": "Remote port" },
+      "connection_state": { "name": "Network connection status" },
+      "rf_frontend_status": { "name": "RF frontend status" },
+      "ifft_overflow": { "name": "iFFT overflow" },
+      "fir_clipped": { "name": "FIR clipped" }
+    },
+    "binary_sensor": {
+      "sram_detected": { "name": "SPI SRAM buffers detected" },
+      "broadcasting": { "name": "Broadcasting" }
+    },
+    "switch": {
+      "rf_frontend_switch": { "name": "RF frontend" },
+      "eti_socket_switch": { "name": "ETI socket" }
     },
     "number": {
       "amplitude_set": { "name": "Amplitude (set)" },
@@ -33,7 +45,8 @@
       "frequency_set": { "name": "Frequency Hz (set)" }
     },
     "select": {
-      "dab_block_set": { "name": "DAB block (set)" }
+      "dab_block_set": { "name": "DAB block (set)" },
+      "connection_mode_set": { "name": "Connection mode (set)" }
     },
     "text": {
       "remote_ip_set": { "name": "Remote IP (set)" }

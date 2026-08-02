@@ -106,3 +106,15 @@ set_config:
           min: 0
           max: 255
           mode: box
+    connection_mode:
+      name: Connection mode
+      description: >
+        TCP mode for the ETI socket. Needs to be server or client before the
+        ETI socket switch's "on" position will work.
+      example: "server"
+      selector:
+        select:
+          options:
+            - "server"
+            - "client"
+            - "off"

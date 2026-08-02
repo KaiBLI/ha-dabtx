@@ -159,21 +159,146 @@ class DabModulatorClient:
         cfg[36] = (ftw >> 8) & 0xFF
         cfg[37] = ftw & 0xFF
 
+    @staticmethod
+    def _set_connection_mode(cfg: bytearray, mode: str) -> None:
+        mapping = {"server": 0x02, "client": 0x04, "off": 0x10}
+        if mode not in mapping:
+            raise DabModulatorError(f"Invalid connection_mode '{mode}'; must be one of {sorted(mapping)}")
+        cfg[28] = mapping[mode]
+
+    @staticmethod
+    def _get_connection_mode(cfg: bytearray) -> str:
+        byte28 = cfg[28]
+        if byte28 == 0x02:
+            return "server"
+        if byte28 == 0x04:
+            return "client"
+        if byte28 == 0x10:
+            return "off"
+        return "unknown"
+
+    @staticmethod
+    def _parse_live_status(data: bytes) -> dict:
+        """
+        Decode the 14-byte live status block (GET s_000000). This is
+        separate from the flash config struct -- it reflects the device's
+        current runtime state, not stored settings.
+        """
+        if len(data) < 14:
+            raise DabModulatorError(f"Expected at least 14 bytes from status read, got {len(data)}")
+
+        # RF frontend (byte 4)
+        fe = data[4]
+        if (fe & 0x50) != 0:
+            rf_frontend_active = False
+            rf_frontend_status = "Off"
+        elif fe == 0x02:
+            rf_frontend_active = True
+            rf_frontend_status = "Active"
+        else:
+            rf_frontend_active = False
+            rf_frontend_status = f"Unknown (0x{fe:02X})"
+
+        # Network/ETI connection state (bytes 9-11)
+        b9, b10, b11 = data[9], data[10], data[11]
+        if b9 in (0x02, 0x04) and b11 == 0x17:
+            connection_state = "Connected"
+            eti_socket_on = True
+        elif b9 in (0x00, 0x01):
+            eti_socket_on = False
+            connection_state = "Admin Off" if b10 == 0x01 else "Flash Off"
+        elif b9 == 0x02 and b11 == 0x14:
+            connection_state = "Listening"
+            eti_socket_on = True
+        elif b9 == 0x04 and b11 in (0x13, 0x00):
+            connection_state = "Connecting"
+            eti_socket_on = True
+        else:
+            connection_state = f"Unknown (0x{b9:02X}:0x{b10:02X}:0x{b11:02X})"
+            eti_socket_on = False
+
+        flags = data[13]
+        if flags & 0x01:
+            ifft_overflow = "Active"
+        elif flags & 0x04:
+            ifft_overflow = "Happened"
+        else:
+            ifft_overflow = "OK"
+
+        if flags & 0x02:
+            fir_clipped = "Active"
+        elif flags & 0x08:
+            fir_clipped = "Happened"
+        else:
+            fir_clipped = "OK"
+
+        return {
+            "rf_frontend_active": rf_frontend_active,
+            "rf_frontend_status": rf_frontend_status,
+            "connection_state": connection_state,
+            "eti_socket_on": eti_socket_on,
+            "ifft_overflow": ifft_overflow,
+            "fir_clipped": fir_clipped,
+            "sram_detected": bool(flags & 0x80),
+            "broadcasting": bool(flags & 0x40),
+            "buffer_fullness_pct": round(data[12] * 100 / 255),
+        }
+
     # ---- public API ------------------------------------------------------
 
     async def async_get_status(self) -> dict:
         """Read current status from the modulator for sensors/coordinator."""
         async with self._lock:
             cfg = await self._read_config()
+            live_raw = await self._request("GET", "s_000000")
+
         freq_hz = self._get_frequency(cfg)
-        return {
+        status = {
             "remote_ip": self._get_remote_ip(cfg),
             "remote_port": self._get_remote_port(cfg),
             "amplitude": self._get_amplitude(cfg),
             "dac_current": self._get_dac_current(cfg),
             "frequency_hz": freq_hz,
             "dab_block": HZ_TO_DAB_BLOCK.get(round(freq_hz)),
+            "connection_mode": self._get_connection_mode(cfg),
         }
+        status.update(self._parse_live_status(live_raw))
+        return status
+
+    async def async_set_rf_frontend(self, turn_on: bool) -> None:
+        """
+        Immediately enable/disable the RF frontend. This is a live action
+        endpoint, separate from the flash config struct -- no erase, write,
+        or reboot involved, so it takes effect right away.
+        """
+        path = "s_020000" if turn_on else "s_025000"
+        async with self._lock:
+            await self._request("GET", path)
+
+    async def async_set_eti_socket(self, turn_on: bool) -> None:
+        """
+        Immediately enable/disable the ETI socket. Also a live action, no
+        reboot required. Turning it on needs to know whether the device is
+        configured as a TCP server or client (from the flash config), so
+        this does one quick config read first.
+        """
+        async with self._lock:
+            if turn_on:
+                cfg = await self._read_config()
+                mode = self._get_connection_mode(cfg)
+                if mode == "server":
+                    path = "s_010200"
+                elif mode == "client":
+                    path = "s_010400"
+                else:
+                    raise DabModulatorError(
+                        "Cannot enable the ETI socket: the device's connection "
+                        "mode isn't set to server or client. Set connection_mode "
+                        "to 'server' or 'client' via set_config first."
+                    )
+            else:
+                path = "s_010000"
+            await self._request("GET", path)
 
     async def async_apply_changes(
         self,
@@ -184,6 +309,7 @@ class DabModulatorClient:
         dab_block: str | None = None,
         amplitude: int | None = None,
         dac_current: int | None = None,
+        connection_mode: str | None = None,
     ) -> dict:
         """
         Read the current config, apply only the fields that were passed,
@@ -192,6 +318,9 @@ class DabModulatorClient:
         """
         if frequency_hz is not None and dab_block is not None:
             raise DabModulatorError("Specify either frequency_hz or dab_block, not both")
+
+        if connection_mode is not None:
+                self._set_connection_mode(cfg, connection_mode)
 
         if dab_block is not None:
             block = dab_block.strip().upper()

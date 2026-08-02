@@ -25,6 +25,10 @@ async def async_setup_entry(
             DabDacCurrentSensor(coordinator, entry),
             DabRemoteIpSensor(coordinator, entry),
             DabRemotePortSensor(coordinator, entry),
+            DabConnectionStateSensor(coordinator, entry),
+            DabRfFrontendStatusSensor(coordinator, entry),
+            DabIfftOverflowSensor(coordinator, entry),
+            DabFirClippedSensor(coordinator, entry),
         ]
     )
 
@@ -102,3 +106,50 @@ class DabRemotePortSensor(_DabModulatorSensorBase):
     @property
     def native_value(self):
         return self.coordinator.data.get("remote_port") if self.coordinator.data else None
+
+
+class DabConnectionStateSensor(_DabModulatorSensorBase):
+    """
+    Network/ETI connection status. The device actually reports more detail
+    than a simple Connected/Admin Off/Error split: Connected, Admin Off,
+    Flash Off, Listening, Connecting, or an Unknown fallback with the raw
+    status bytes -- all surfaced here as-is.
+    """
+
+    _key = "connection_state"
+    _attr_translation_key = "connection_state"
+
+    @property
+    def native_value(self):
+        return self.coordinator.data.get("connection_state") if self.coordinator.data else None
+
+
+class DabRfFrontendStatusSensor(_DabModulatorSensorBase):
+    _key = "rf_frontend_status"
+    _attr_translation_key = "rf_frontend_status"
+
+    @property
+    def native_value(self):
+        return self.coordinator.data.get("rf_frontend_status") if self.coordinator.data else None
+
+
+class DabIfftOverflowSensor(_DabModulatorSensorBase):
+    """OK / Happened (past occurrence) / Active (currently overflowing)."""
+
+    _key = "ifft_overflow"
+    _attr_translation_key = "ifft_overflow"
+
+    @property
+    def native_value(self):
+        return self.coordinator.data.get("ifft_overflow") if self.coordinator.data else None
+
+
+class DabFirClippedSensor(_DabModulatorSensorBase):
+    """OK / Happened (past occurrence) / Active (currently clipping)."""
+
+    _key = "fir_clipped"
+    _attr_translation_key = "fir_clipped"
+
+    @property
+    def native_value(self):
+        return self.coordinator.data.get("fir_clipped") if self.coordinator.data else None
