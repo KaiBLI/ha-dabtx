@@ -18,6 +18,15 @@ from .const import CFG_LEN, DAB_BLOCKS, HZ_TO_DAB_BLOCK, SECTOR_OFFSET, SRC_FREQ
 
 _LOGGER = logging.getLogger(__name__)
 
+# TII Main Id (0-69) -> raw byte value written to cfg[59]. 0 is never a
+# member of this table, so cfg[59] == 0 unambiguously means TII is disabled.
+TII_PAT = [
+    240, 232, 216, 184, 120, 228, 212, 180, 116, 204, 172, 108, 156, 92, 60,
+    226, 210, 178, 114, 202, 170, 106, 154, 90, 58, 198, 166, 102, 150, 86,
+    54, 142, 78, 46, 30, 225, 209, 177, 113, 201, 169, 105, 153, 89, 57, 197,
+    165, 101, 149, 85, 53, 141, 77, 45, 29, 195, 163, 99, 147, 83, 51, 139,
+    75, 43, 27, 135, 71, 39, 23, 15,
+]
 
 class DabModulatorError(Exception):
     """Raised for any modulator communication or protocol error."""
@@ -244,6 +253,32 @@ class DabModulatorClient:
             "buffer_fullness_pct": round(data[12] * 100 / 255),
         }
 
+    @staticmethod
+    def _get_tii(cfg: bytearray) -> dict:
+        raw59 = cfg[59]
+        enabled = raw59 > 0
+        try:
+            main_id = TII_PAT.index(raw59)
+        except ValueError:
+            main_id = 0
+        sub_id = cfg[58] if cfg[58] < 24 else 0
+        return {"tii_enabled": enabled, "tii_main_id": main_id, "tii_sub_id": sub_id}
+
+    @staticmethod
+    def _set_tii_main_id(cfg: bytearray, main_id: int) -> None:
+        """Setting this also enables TII (matches the device: any valid
+        Main Id maps to a non-zero raw value, and 0 is the only 'disabled'
+        state)."""
+        if not (0 <= main_id <= 69):
+            raise DabModulatorError("TII Main Id must be 0-69")
+        cfg[59] = TII_PAT[main_id]
+
+    @staticmethod
+    def _set_tii_sub_id(cfg: bytearray, sub_id: int) -> None:
+        if not (0 <= sub_id <= 23):
+            raise DabModulatorError("TII Sub Id must be 0-23")
+        cfg[58] = sub_id & 0x1F
+
     # ---- public API ------------------------------------------------------
 
     async def async_get_status(self) -> dict:
@@ -263,6 +298,7 @@ class DabModulatorClient:
             "connection_mode": self._get_connection_mode(cfg),
         }
         status.update(self._parse_live_status(live_raw))
+        status.update(self._get_tii(cfg))
         return status
 
     async def async_set_rf_frontend(self, turn_on: bool) -> None:
@@ -310,6 +346,8 @@ class DabModulatorClient:
         amplitude: int | None = None,
         dac_current: int | None = None,
         connection_mode: str | None = None,
+        tii_main_id: int | None = None,
+        tii_sub_id: int | None = None,
     ) -> dict:
         """
         Read the current config, apply only the fields that were passed,
@@ -321,6 +359,12 @@ class DabModulatorClient:
 
         if connection_mode is not None:
                 self._set_connection_mode(cfg, connection_mode)
+
+        if tii_main_id is not None:
+                self._set_tii_main_id(cfg, tii_main_id)
+
+        if tii_sub_id is not None:
+                self._set_tii_sub_id(cfg, tii_sub_id)
 
         if dab_block is not None:
             block = dab_block.strip().upper()

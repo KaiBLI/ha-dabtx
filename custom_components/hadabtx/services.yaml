@@ -118,3 +118,21 @@ set_config:
             - "server"
             - "client"
             - "off"
+    tii_main_id:
+      name: TII Main Id
+      description: Transmitter Identification Info Main Id (0-69). Setting this also enables TII.
+      example: 34
+      selector:
+        number:
+          min: 0
+          max: 69
+          mode: box
+    tii_sub_id:
+      name: TII Sub Id
+      description: Transmitter Identification Info Sub Id (0-23).
+      example: 5
+      selector:
+        number:
+          min: 0
+          max: 23
+          mode: box

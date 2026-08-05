@@ -24,6 +24,8 @@ from .const import (
     DAB_BLOCKS,
     DOMAIN,
     SERVICE_SET_CONFIG,
+    ATTR_TII_MAIN_ID,
+    ATTR_TII_SUB_ID,
 )
 from .coordinator import DabModulatorCoordinator
 from .models import PendingConfig
@@ -50,6 +52,8 @@ SET_CONFIG_SCHEMA = vol.Schema(
         vol.Optional(ATTR_AMPLITUDE): vol.All(vol.Coerce(int), vol.Range(min=0, max=255)),
         vol.Optional(ATTR_DAC_CURRENT): vol.All(vol.Coerce(int), vol.Range(min=0, max=255)),
         vol.Optional(ATTR_CONNECTION_MODE): vol.In(["server", "client", "off"]),
+        vol.Optional(ATTR_TII_MAIN_ID): vol.All(vol.Coerce(int), vol.Range(min=0, max=69)),
+        vol.Optional(ATTR_TII_SUB_ID): vol.All(vol.Coerce(int), vol.Range(min=0, max=23)),
     }
 )
 
@@ -113,6 +117,8 @@ def _async_register_services(hass: HomeAssistant) -> None:
                 ATTR_AMPLITUDE,
                 ATTR_DAC_CURRENT,
                 ATTR_CONNECTION_MODE,
+                ATTR_TII_MAIN_ID,
+                ATTR_TII_SUB_ID,
             )
             if k in call.data
         }

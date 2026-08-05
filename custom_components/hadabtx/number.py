@@ -23,6 +23,8 @@ async def async_setup_entry(
             DabDacCurrentNumber(entry, pending),
             DabRemotePortNumber(entry, pending),
             DabFrequencyNumber(entry, pending),
+            DabTiiMainIdNumber(entry, pending),
+            DabTiiSubIdNumber(entry, pending),
         ]
     )
 
@@ -95,3 +97,19 @@ class DabFrequencyNumber(_PendingNumberBase):
     async def async_set_native_value(self, value: float) -> None:
         await super().async_set_native_value(value)
         self._pending.dab_block = None
+
+class DabTiiMainIdNumber(_PendingNumberBase):
+    """0-69, per the device's tiiPat lookup table -- NOT the 0-69 range
+    someone might guess applies to both TII fields; Sub Id below has a
+    different, narrower range."""
+
+    _field = "tii_main_id"
+    _attr_translation_key = "tii_main_id_set"
+    _min, _max, _step = 0, 69, 1
+
+class DabTiiSubIdNumber(_PendingNumberBase):
+    """0-23 -- masked to 5 bits on write by the device itself."""
+
+    _field = "tii_sub_id"
+    _attr_translation_key = "tii_sub_id_set"
+    _min, _max, _step = 0, 23, 1

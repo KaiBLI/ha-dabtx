@@ -20,6 +20,8 @@ class PendingConfig:
     amplitude: Optional[int] = None
     dac_current: Optional[int] = None
     connection_mode: Optional[str] = None
+    tii_main_id: Optional[int] = None
+    tii_sub_id: Optional[int] = None
     def as_kwargs(self) -> dict:
         """Only the fields that have actually been staged."""
         return {

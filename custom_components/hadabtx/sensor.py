@@ -29,6 +29,8 @@ async def async_setup_entry(
             DabRfFrontendStatusSensor(coordinator, entry),
             DabIfftOverflowSensor(coordinator, entry),
             DabFirClippedSensor(coordinator, entry),
+            DabTiiMainIdSensor(coordinator, entry),
+            DabTiiSubIdSensor(coordinator, entry),
         ]
     )
 
@@ -153,3 +155,24 @@ class DabFirClippedSensor(_DabModulatorSensorBase):
     @property
     def native_value(self):
         return self.coordinator.data.get("fir_clipped") if self.coordinator.data else None
+
+class DabTiiMainIdSensor(_DabModulatorSensorBase):
+    """Current TII Main Id (0-69). Reads 0 whether TII is genuinely set to
+    ID 0 or disabled -- check the eti/tii_enabled field if you need to tell
+    those apart."""
+
+    _key = "tii_main_id"
+    _attr_translation_key = "tii_main_id"
+
+    @property
+    def native_value(self):
+        return self.coordinator.data.get("tii_main_id") if self.coordinator.data else None
+
+
+class DabTiiSubIdSensor(_DabModulatorSensorBase):
+    _key = "tii_sub_id"
+    _attr_translation_key = "tii_sub_id"
+
+    @property
+    def native_value(self):
+        return self.coordinator.data.get("tii_sub_id") if self.coordinator.data else None
